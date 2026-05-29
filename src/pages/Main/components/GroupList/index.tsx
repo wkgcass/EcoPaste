@@ -99,7 +99,7 @@ const GroupList = () => {
     }
   }, [rootState.group]);
 
-  useKeyPress("tab", (event) => {
+  const handleSwitch = (event: KeyboardEvent, reverse: boolean) => {
     // Ctrl+Tab / Ctrl+Shift+Tab：移动自定义收藏夹标签
     if (event.ctrlKey) {
       if (
@@ -111,7 +111,7 @@ const GroupList = () => {
         const currentIndex = favoriteGroups.indexOf(rootState.favoriteGroup);
 
         if (currentIndex !== -1) {
-          if (event.shiftKey) {
+          if (reverse) {
             if (currentIndex > 0) {
               moveFavoriteGroup(currentIndex, currentIndex - 1);
             }
@@ -135,9 +135,8 @@ const GroupList = () => {
 
       let nextIndex: number;
 
-      if (event.shiftKey) {
+      if (reverse) {
         if (currentIndex <= 0) {
-          // 第一个子分组再 Shift+Tab，跳到收藏前一个外层标签
           const favIdx = presetGroups.findIndex((g) => g.id === "favorite");
 
           rootState.group = presetGroups[favIdx - 1].id;
@@ -148,7 +147,6 @@ const GroupList = () => {
         nextIndex = currentIndex - 1;
       } else {
         if (currentIndex >= subGroups.length - 1) {
-          // 最后一个子分组再 Tab，跳到外层第一个标签
           rootState.group = presetGroups[0].id;
 
           return;
@@ -166,7 +164,7 @@ const GroupList = () => {
 
     let nextIndex = index;
 
-    if (event.shiftKey) {
+    if (reverse) {
       nextIndex = index === 0 ? length - 1 : index - 1;
     } else {
       nextIndex = index === length - 1 ? 0 : index + 1;
@@ -176,14 +174,30 @@ const GroupList = () => {
 
     // Tab 切换到收藏标签时
     if (presetGroups[nextIndex].id === "favorite") {
-      if (event.shiftKey && favoriteGroups.length > 0) {
-        // Shift+Tab：选中最后一个自定义收藏夹
+      if (reverse && favoriteGroups.length > 0) {
         rootState.favoriteGroup = favoriteGroups[favoriteGroups.length - 1];
       } else {
-        // Tab 正向：选中默认收藏夹
         rootState.favoriteGroup = "_default_";
       }
     }
+  };
+
+  useKeyPress("tab", (event) => handleSwitch(event, event.shiftKey));
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        handleSwitch(event, true);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        handleSwitch(event, false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => window.removeEventListener("keydown", onKeyDown);
   });
 
   return (
