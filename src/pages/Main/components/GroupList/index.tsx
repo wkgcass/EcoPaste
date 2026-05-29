@@ -186,6 +186,16 @@ const GroupList = () => {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      // 搜索栏编辑中时不拦截方向键
+      const active = document.activeElement;
+
+      if (
+        active &&
+        (active.tagName === "INPUT" || active.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         handleSwitch(event, true);

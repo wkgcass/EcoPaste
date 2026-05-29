@@ -41,10 +41,13 @@ const SearchInput: FC<HTMLAttributes<HTMLDivElement>> = (props) => {
     onFocus() {
       const { search } = clipboardStore;
 
-      // 搜索框默认聚焦
-      if (search.defaultFocus) {
-        inputRef.current?.focus();
-      } else {
+      // 搜索框自动清空
+      if (search.autoClear) {
+        setValue(void 0);
+      }
+
+      // 默认不聚焦搜索框
+      if (!search.defaultFocus) {
         inputRef.current?.blur();
       }
     },
