@@ -98,4 +98,7 @@ export interface ClipboardStore {
     unit: number;
     maxCount: number;
   };
+
+  // 收藏夹分组排序
+  favoriteGroupOrder: string[];
 }

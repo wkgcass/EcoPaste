@@ -3,17 +3,21 @@ import { Tag } from "antd";
 import clsx from "clsx";
 import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useSnapshot } from "valtio";
 import Scrollbar from "@/components/Scrollbar";
 import { LISTEN_KEY } from "@/constants";
 import { selectHistory } from "@/database/history";
 import { useTauriListen } from "@/hooks/useTauriListen";
+import { clipboardStore } from "@/stores/clipboard";
 import type { DatabaseSchemaGroup } from "@/types/database";
 import { scrollElementToCenter } from "@/utils/dom";
+import { saveStore } from "@/utils/store";
 import { MainContext } from "../..";
 
 const GroupList = () => {
   const { rootState } = useContext(MainContext);
   const { t } = useTranslation();
+  const { favoriteGroupOrder } = useSnapshot(clipboardStore);
   const favoriteGroups = useReactive<string[]>([]);
 
   useEffect(() => {
@@ -43,6 +47,28 @@ const GroupList = () => {
     },
   ];
 
+  // 按持久化顺序排列分组，未记录的追加到末尾
+  const sortGroups = (groups: string[]) => {
+    const ordered = favoriteGroupOrder.filter((g) => groups.includes(g));
+    const remaining = groups.filter((g) => !favoriteGroupOrder.includes(g));
+
+    return [...ordered, ...remaining];
+  };
+
+  // 移动分组并保存顺序
+  const moveFavoriteGroup = (fromIndex: number, toIndex: number) => {
+    const newGroups = [...favoriteGroups];
+
+    [newGroups[fromIndex], newGroups[toIndex]] = [
+      newGroups[toIndex],
+      newGroups[fromIndex],
+    ];
+
+    favoriteGroups.splice(0, favoriteGroups.length, ...newGroups);
+    clipboardStore.favoriteGroupOrder = [...newGroups];
+    saveStore();
+  };
+
   // 从数据库查询所有收藏夹分组名称
   const loadFavoriteGroups = async () => {
     const list = await selectHistory((qb) =>
@@ -57,7 +83,7 @@ const GroupList = () => {
       ...new Set(list.map((item) => item.favoriteGroup).filter(Boolean)),
     ].sort() as string[];
 
-    favoriteGroups.splice(0, favoriteGroups.length, ...groups);
+    favoriteGroups.splice(0, favoriteGroups.length, ...sortGroups(groups));
   };
 
   useAsyncEffect(async () => {
@@ -74,6 +100,32 @@ const GroupList = () => {
   }, [rootState.group]);
 
   useKeyPress("tab", (event) => {
+    // Ctrl+Tab / Ctrl+Shift+Tab：移动自定义收藏夹标签
+    if (event.ctrlKey) {
+      if (
+        rootState.group === "favorite" &&
+        rootState.favoriteGroup &&
+        rootState.favoriteGroup !== "_default_" &&
+        favoriteGroups.length > 1
+      ) {
+        const currentIndex = favoriteGroups.indexOf(rootState.favoriteGroup);
+
+        if (currentIndex !== -1) {
+          if (event.shiftKey) {
+            if (currentIndex > 0) {
+              moveFavoriteGroup(currentIndex, currentIndex - 1);
+            }
+          } else {
+            if (currentIndex < favoriteGroups.length - 1) {
+              moveFavoriteGroup(currentIndex, currentIndex + 1);
+            }
+          }
+        }
+      }
+
+      return;
+    }
+
     // 在收藏夹模式下，如果有子分组，Tab 切换子分组
     if (rootState.group === "favorite" && favoriteGroups.length > 0) {
       const subGroups = ["_default_", ...favoriteGroups];

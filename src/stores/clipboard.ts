@@ -17,6 +17,8 @@ export const clipboardStore = proxy<ClipboardStore>({
     showOriginalContent: false,
   },
 
+  favoriteGroupOrder: [],
+
   history: {
     duration: 0,
     maxCount: 0,
