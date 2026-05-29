@@ -66,12 +66,9 @@ const GroupList = () => {
 
   useTauriListen(LISTEN_KEY.REFRESH_CLIPBOARD_LIST, loadFavoriteGroups);
 
-  // 当切换到 favorite 分组时，设置默认收藏夹分组
-  // 当切换到其他分组时，清除 favoriteGroup
+  // 当切换到非收藏分组时，清除 favoriteGroup
   useEffect(() => {
-    if (rootState.group === "favorite") {
-      rootState.favoriteGroup = "_default_";
-    } else {
+    if (rootState.group !== "favorite") {
       rootState.favoriteGroup = undefined;
     }
   }, [rootState.group]);
@@ -87,9 +84,25 @@ const GroupList = () => {
       let nextIndex: number;
 
       if (event.shiftKey) {
-        nextIndex = currentIndex <= 0 ? subGroups.length - 1 : currentIndex - 1;
+        if (currentIndex <= 0) {
+          // 第一个子分组再 Shift+Tab，跳到收藏前一个外层标签
+          const favIdx = presetGroups.findIndex((g) => g.id === "favorite");
+
+          rootState.group = presetGroups[favIdx - 1].id;
+
+          return;
+        }
+
+        nextIndex = currentIndex - 1;
       } else {
-        nextIndex = currentIndex >= subGroups.length - 1 ? 0 : currentIndex + 1;
+        if (currentIndex >= subGroups.length - 1) {
+          // 最后一个子分组再 Tab，跳到外层第一个标签
+          rootState.group = presetGroups[0].id;
+
+          return;
+        }
+
+        nextIndex = currentIndex + 1;
       }
 
       rootState.favoriteGroup = subGroups[nextIndex];
@@ -108,6 +121,17 @@ const GroupList = () => {
     }
 
     rootState.group = presetGroups[nextIndex].id;
+
+    // Tab 切换到收藏标签时
+    if (presetGroups[nextIndex].id === "favorite") {
+      if (event.shiftKey && favoriteGroups.length > 0) {
+        // Shift+Tab：选中最后一个自定义收藏夹
+        rootState.favoriteGroup = favoriteGroups[favoriteGroups.length - 1];
+      } else {
+        // Tab 正向：选中默认收藏夹
+        rootState.favoriteGroup = "_default_";
+      }
+    }
   });
 
   return (
@@ -125,6 +149,10 @@ const GroupList = () => {
                 className={clsx({ "bg-primary!": isChecked })}
                 onChange={() => {
                   rootState.group = id;
+
+                  if (id === "favorite") {
+                    rootState.favoriteGroup = "_default_";
+                  }
                 }}
               >
                 {name}
