@@ -170,7 +170,7 @@ const GroupList = () => {
               !rootState.favoriteGroup
             }
             className={clsx({
-              "bg-primary!":
+              "bg-red!":
                 rootState.favoriteGroup === "_default_" ||
                 !rootState.favoriteGroup,
             })}
@@ -185,7 +185,7 @@ const GroupList = () => {
               <Tag.CheckableTag
                 checked={rootState.favoriteGroup === groupName}
                 className={clsx({
-                  "bg-primary!": rootState.favoriteGroup === groupName,
+                  "bg-red!": rootState.favoriteGroup === groupName,
                 })}
                 onChange={() => {
                   rootState.favoriteGroup = groupName;
