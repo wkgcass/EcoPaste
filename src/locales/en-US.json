@@ -36,6 +36,7 @@
       "tab": {
         "all": "All",
         "favorite": "Favorite",
+        "favorite_default": "Default",
         "files": "File",
         "image": "Image",
         "text": "Text"
@@ -61,7 +62,8 @@
     },
     "note_modal": {
       "hints": {
-        "input_note": "Please enter a note"
+        "input_note": "Please enter a note",
+        "input_note_with_group": "Enter note, use // to specify a favorite folder name"
       },
       "label": {
         "note": "Note"

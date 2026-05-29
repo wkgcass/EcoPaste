@@ -115,3 +115,22 @@ export const isBlank = (value: unknown) => {
 
   return true;
 };
+
+/**
+ * 从备注中解析收藏夹名称
+ * 如果备注中包含 //（且不是 URL 的一部分），则取 // 之后（去除首尾空格）的内容作为收藏夹名称
+ * 否则返回 undefined（默认收藏夹）
+ * 注意：需要排除 http://、https://、ftp:// 等 URL 协议中的 //
+ */
+export const parseFavoriteGroup = (note?: string): string | undefined => {
+  if (!note || isBlank(note)) return undefined;
+
+  // 使用正则匹配非 URL 的 //，即前面不是冒号的 //
+  const match = note.match(/(?<!:)\s*\/\/\s*(.+)/);
+
+  if (!match) return undefined;
+
+  const groupName = match[1].trim();
+
+  return groupName || undefined;
+};

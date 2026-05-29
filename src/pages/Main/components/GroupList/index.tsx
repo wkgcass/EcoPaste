@@ -1,9 +1,12 @@
-import { useKeyPress } from "ahooks";
+import { useAsyncEffect, useKeyPress, useReactive } from "ahooks";
 import { Tag } from "antd";
 import clsx from "clsx";
 import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Scrollbar from "@/components/Scrollbar";
+import { LISTEN_KEY } from "@/constants";
+import { selectHistory } from "@/database/history";
+import { useTauriListen } from "@/hooks/useTauriListen";
 import type { DatabaseSchemaGroup } from "@/types/database";
 import { scrollElementToCenter } from "@/utils/dom";
 import { MainContext } from "../..";
@@ -11,6 +14,7 @@ import { MainContext } from "../..";
 const GroupList = () => {
   const { rootState } = useContext(MainContext);
   const { t } = useTranslation();
+  const favoriteGroups = useReactive<string[]>([]);
 
   useEffect(() => {
     scrollElementToCenter(rootState.group);
@@ -39,7 +43,59 @@ const GroupList = () => {
     },
   ];
 
+  // 从数据库查询所有收藏夹分组名称
+  const loadFavoriteGroups = async () => {
+    const list = await selectHistory((qb) =>
+      qb
+        .select("favoriteGroup")
+        .where("favorite", "=", true)
+        .where("favoriteGroup", "is not", null)
+        .where("favoriteGroup", "!=", ""),
+    );
+
+    const groups = [
+      ...new Set(list.map((item) => item.favoriteGroup).filter(Boolean)),
+    ].sort() as string[];
+
+    favoriteGroups.splice(0, favoriteGroups.length, ...groups);
+  };
+
+  useAsyncEffect(async () => {
+    await loadFavoriteGroups();
+  }, [rootState.group]);
+
+  useTauriListen(LISTEN_KEY.REFRESH_CLIPBOARD_LIST, loadFavoriteGroups);
+
+  // 当切换到 favorite 分组时，设置默认收藏夹分组
+  // 当切换到其他分组时，清除 favoriteGroup
+  useEffect(() => {
+    if (rootState.group === "favorite") {
+      rootState.favoriteGroup = "_default_";
+    } else {
+      rootState.favoriteGroup = undefined;
+    }
+  }, [rootState.group]);
+
   useKeyPress("tab", (event) => {
+    // 在收藏夹模式下，如果有子分组，Tab 切换子分组
+    if (rootState.group === "favorite" && favoriteGroups.length > 0) {
+      const subGroups = ["_default_", ...favoriteGroups];
+      const currentIndex = rootState.favoriteGroup
+        ? subGroups.indexOf(rootState.favoriteGroup)
+        : -1;
+
+      let nextIndex: number;
+
+      if (event.shiftKey) {
+        nextIndex = currentIndex <= 0 ? subGroups.length - 1 : currentIndex - 1;
+      } else {
+        nextIndex = currentIndex >= subGroups.length - 1 ? 0 : currentIndex + 1;
+      }
+
+      rootState.favoriteGroup = subGroups[nextIndex];
+      return;
+    }
+
     const index = presetGroups.findIndex((item) => item.id === rootState.group);
     const length = presetGroups.length;
 
@@ -55,27 +111,65 @@ const GroupList = () => {
   });
 
   return (
-    <Scrollbar className="flex" data-tauri-drag-region>
-      {presetGroups.map((item) => {
-        const { id, name } = item;
+    <div className="flex flex-col gap-1 overflow-hidden">
+      <Scrollbar className="flex" data-tauri-drag-region>
+        {presetGroups.map((item) => {
+          const { id, name } = item;
 
-        const isChecked = id === rootState.group;
+          const isChecked = id === rootState.group;
 
-        return (
-          <div id={id} key={id}>
-            <Tag.CheckableTag
-              checked={isChecked}
-              className={clsx({ "bg-primary!": isChecked })}
-              onChange={() => {
-                rootState.group = id;
-              }}
-            >
-              {name}
-            </Tag.CheckableTag>
-          </div>
-        );
-      })}
-    </Scrollbar>
+          return (
+            <div id={id} key={id}>
+              <Tag.CheckableTag
+                checked={isChecked}
+                className={clsx({ "bg-primary!": isChecked })}
+                onChange={() => {
+                  rootState.group = id;
+                }}
+              >
+                {name}
+              </Tag.CheckableTag>
+            </div>
+          );
+        })}
+      </Scrollbar>
+
+      {rootState.group === "favorite" && favoriteGroups.length > 0 && (
+        <Scrollbar className="flex" data-tauri-drag-region>
+          <Tag.CheckableTag
+            checked={
+              rootState.favoriteGroup === "_default_" ||
+              !rootState.favoriteGroup
+            }
+            className={clsx({
+              "bg-primary!":
+                rootState.favoriteGroup === "_default_" ||
+                !rootState.favoriteGroup,
+            })}
+            onChange={() => {
+              rootState.favoriteGroup = "_default_";
+            }}
+          >
+            {t("clipboard.label.tab.favorite_default")}
+          </Tag.CheckableTag>
+          {favoriteGroups.map((groupName) => (
+            <div key={groupName}>
+              <Tag.CheckableTag
+                checked={rootState.favoriteGroup === groupName}
+                className={clsx({
+                  "bg-primary!": rootState.favoriteGroup === groupName,
+                })}
+                onChange={() => {
+                  rootState.favoriteGroup = groupName;
+                }}
+              >
+                {groupName}
+              </Tag.CheckableTag>
+            </div>
+          ))}
+        </Scrollbar>
+      )}
+    </div>
   );
 };
 

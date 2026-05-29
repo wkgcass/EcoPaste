@@ -13,6 +13,7 @@ import { updateHistory } from "@/database/history";
 import { MainContext } from "@/pages/Main";
 import { clipboardStore } from "@/stores/clipboard";
 import type { DatabaseSchemaHistory } from "@/types/database";
+import { parseFavoriteGroup } from "@/utils/is";
 
 export interface NoteModalRef {
   open: (id: string) => void;
@@ -51,7 +52,11 @@ const NoteModal = forwardRef<NoteModalRef>((_, ref) => {
 
       item.note = note;
 
-      updateHistory(id, { note });
+      const favoriteGroup = parseFavoriteGroup(note);
+
+      item.favoriteGroup = favoriteGroup;
+
+      updateHistory(id, { favoriteGroup, note });
 
       if (clipboardStore.content.autoFavorite && !favorite) {
         item.favorite = true;
@@ -87,7 +92,7 @@ const NoteModal = forwardRef<NoteModalRef>((_, ref) => {
         <Form.Item className="mb-0!" name="note">
           <Input
             autoComplete="off"
-            placeholder={t("component.note_modal.hints.input_note")}
+            placeholder={t("component.note_modal.hints.input_note_with_group")}
             ref={inputRef}
           />
         </Form.Item>

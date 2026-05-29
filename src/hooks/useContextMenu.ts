@@ -12,7 +12,7 @@ import type { ItemProps } from "@/pages/Main/components/HistoryList/components/I
 import { pasteToClipboard, writeToClipboard } from "@/plugins/clipboard";
 import { clipboardStore } from "@/stores/clipboard";
 import { globalStore } from "@/stores/global";
-import { isMac } from "@/utils/is";
+import { isMac, parseFavoriteGroup } from "@/utils/is";
 import { join } from "@/utils/path";
 
 interface UseContextMenuProps extends ItemProps {
@@ -43,7 +43,11 @@ export const useContextMenu = (props: UseContextMenuProps) => {
 
     matched.favorite = nextFavorite;
 
-    updateHistory(id, { favorite: nextFavorite });
+    const favoriteGroup = parseFavoriteGroup(matched.note);
+
+    matched.favoriteGroup = favoriteGroup;
+
+    updateHistory(id, { favorite: nextFavorite, favoriteGroup });
   };
 
   const openToBrowser = () => {

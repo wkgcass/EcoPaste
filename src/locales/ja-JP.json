@@ -36,6 +36,7 @@
       "tab": {
         "all": "すべて",
         "favorite": "コレクション",
+        "favorite_default": "デフォルト",
         "files": "ファイル",
         "image": "画像",
         "text": "テキスト"
@@ -61,7 +62,8 @@
     },
     "note_modal": {
       "hints": {
-        "input_note": "メモを入力してください"
+        "input_note": "メモを入力してください",
+        "input_note_with_group": "メモを入力、// の後にお気に入りフォルダ名を指定"
       },
       "label": {
         "note": "備考"

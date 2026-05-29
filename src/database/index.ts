@@ -48,6 +48,16 @@ export const getDatabase = async () => {
     .addColumn("subtype", "text")
     .execute();
 
+  // 迁移：添加 favoriteGroup 列
+  try {
+    await db.schema
+      .alterTable("history")
+      .addColumn("favoriteGroup", "text")
+      .execute();
+  } catch {
+    // 列已存在，忽略错误
+  }
+
   return db;
 };
 

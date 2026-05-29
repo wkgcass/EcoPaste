@@ -35,12 +35,24 @@ export const useHistoryList = (options: Options) => {
 
       const list = await selectHistory((qb) => {
         const { size } = state;
-        const { group, search } = rootState;
+        const { group, search, favoriteGroup } = rootState;
         const isFavoriteGroup = group === "favorite";
         const isNormalGroup = group !== "all" && !isFavoriteGroup;
 
         return qb
           .$if(isFavoriteGroup, (eb) => eb.where("favorite", "=", true))
+          .$if(isFavoriteGroup && favoriteGroup === "_default_", (eb) =>
+            eb.where((eb2) =>
+              eb2.or([
+                eb2("favoriteGroup", "is", null),
+                eb2("favoriteGroup", "=", ""),
+              ]),
+            ),
+          )
+          .$if(
+            isFavoriteGroup && !!favoriteGroup && favoriteGroup !== "_default_",
+            (eb) => eb.where("favoriteGroup", "=", favoriteGroup),
+          )
           .$if(isNormalGroup, (eb) => eb.where("group", "=", group))
           .$if(!isBlank(search), (eb) => {
             return eb.where((eb) => {
@@ -115,7 +127,7 @@ export const useHistoryList = (options: Options) => {
     await reload();
 
     rootState.activeId = rootState.list[0]?.id;
-  }, [rootState.group, rootState.search]);
+  }, [rootState.group, rootState.favoriteGroup, rootState.search]);
 
   return {
     loadMore,

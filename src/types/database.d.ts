@@ -13,6 +13,7 @@ export type DatabaseSchemaHistory<
   group: DatabaseSchemaGroupId;
   search: string;
   favorite: boolean;
+  favoriteGroup?: string;
   createTime: string;
   note?: string;
   subtype?: DatabaseSchemaHistorySubtype;

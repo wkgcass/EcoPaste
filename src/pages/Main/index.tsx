@@ -36,6 +36,7 @@ interface EventBusPayload {
 
 export interface State {
   group: DatabaseSchemaGroupId;
+  favoriteGroup?: string;
   search?: string;
   pinned?: boolean;
   activeId?: string;

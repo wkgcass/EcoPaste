@@ -36,6 +36,7 @@
       "tab": {
         "all": "全部",
         "favorite": "收藏",
+        "favorite_default": "預設收藏夾",
         "files": "文件",
         "image": "圖片",
         "text": "文字"
@@ -61,7 +62,8 @@
     },
     "note_modal": {
       "hints": {
-        "input_note": "請輸入備註"
+        "input_note": "請輸入備註",
+        "input_note_with_group": "請輸入備註，// 後可指定收藏夾名稱"
       },
       "label": {
         "note": "備註"
