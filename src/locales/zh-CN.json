@@ -177,7 +177,8 @@
           "window_position": "窗口位置",
           "window_position_center": "屏幕中心",
           "window_position_follow": "跟随鼠标",
-          "window_position_remember": "记住位置"
+          "window_position_remember": "记住位置",
+          "window_position_right": "靠右放置"
         },
         "title": "窗口设置"
       }

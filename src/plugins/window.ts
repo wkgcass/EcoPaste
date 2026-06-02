@@ -67,6 +67,14 @@ export const toggleWindowVisible = async () => {
         if (window.position === "follow") {
           x = Math.min(x, position.x + size.width - width);
           y = Math.min(y, position.y + size.height - height);
+        } else if (window.position === "right") {
+          // 靠右放置：屏幕最右侧，高度等于屏幕高度
+          x = position.x + size.width - width;
+          y = position.y;
+
+          await appWindow.setSize(
+            new PhysicalSize(Math.round(width), Math.round(size.height)),
+          );
         } else {
           x = position.x + (size.width - width) / 2;
           y = position.y + (size.height - height) / 2;

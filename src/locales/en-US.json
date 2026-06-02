@@ -177,7 +177,8 @@
           "window_position": "Window Position",
           "window_position_center": "Center on Screen",
           "window_position_follow": "Follow Mouse Cursor",
-          "window_position_remember": "Remember Position"
+          "window_position_remember": "Remember Position",
+          "window_position_right": "Right Edge"
         },
         "title": "Window Settings"
       }
