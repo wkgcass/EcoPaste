@@ -34,6 +34,12 @@ const WindowPosition = () => {
     },
     {
       label: t(
+        "preference.clipboard.window_settings.label.window_position_left",
+      ),
+      value: "left",
+    },
+    {
+      label: t(
         "preference.clipboard.window_settings.label.window_position_right",
       ),
       value: "right",

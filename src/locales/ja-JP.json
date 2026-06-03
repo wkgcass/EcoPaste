@@ -177,6 +177,7 @@
           "window_position": "クリップボード位置",
           "window_position_center": "スクリーンセンター",
           "window_position_follow": "マウスに従う",
+          "window_position_left": "左端に配置",
           "window_position_remember": "位置を記憶する",
           "window_position_right": "右端に配置"
         },
