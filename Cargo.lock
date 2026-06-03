@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "EcoPaste"
-version = "0.6.0-beta.3a"
+version = "0.6.0-beta.3b"
 dependencies = [
  "serde",
  "serde_json",
